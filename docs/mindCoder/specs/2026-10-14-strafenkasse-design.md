@@ -57,8 +57,8 @@ Strafenart   { id, name, betrag, vorzeichen, einheit, aktiv, haeufigkeit }
 Amt          { id, name, inhaber[] }            // Spieler-ids
 Saison       { id, bezeichnung, von, bis, jahresbeitrag }
 
-Buchung      { id, spielerId, art, strafenartId?, datum, betrag, menge,
-               einheit, notiz?, monatsabschlussId? }
+Buchung      { id, spielerId, art, strafenartId?, bezeichnung, datum, betrag,
+               menge, einheit, notiz?, erledigt? }
 ```
 
 - `art` ∈ `strafe` · `jahresbeitrag` · `zahlung` · `gutschrift` · `verzug`
@@ -116,13 +116,16 @@ Keine Bestätigungsdialoge. Korrektur läuft über Rückgängig und die Tageslis
 - Dort buchen: **Zahlung** (Betrag vorbelegt mit offenem Saldo), **Gutschrift**
   (freier Betrag plus Notiz), **Verzug** (Betrag vorgeschlagen als doppelte
   Strafsumme des Vormonats, **von Tim bestätigt, nicht automatisch**).
-- Offene Naturalstrafen je Spieler als eigene Zeile („1 Kiste offen"), abhakbar.
+- Offene Naturalstrafen je Spieler als eigene Zeile („1 Kiste offen"). Sie wird
+  abgehakt, wenn die Kiste kommt, oder zum hinterlegten Kistenpreis in Geld
+  abgelöst — dann entsteht eine Eurobuchung und die Kiste gilt als erledigt.
 
 ### Abschluss
 
-„Monat abschließen" erzeugt ein Dokument und markiert die enthaltenen Buchungen
-mit der Abschluss-id (danach noch löschbar, aber sichtbar als zum Abschluss
-gehörend).
+„Monat abschließen" erzeugt ein Dokument und merkt sich den Abschluss als
+Einstellung (Monat und Zeitpunkt). Die Buchungen selbst werden nicht markiert:
+Die Zuordnung zu einem Monat ergibt sich aus dem Datum, eine zweite Markierung
+wäre eine zweite Wahrheit.
 
 Inhalt, in einem Dokument:
 
@@ -168,15 +171,18 @@ Komfort.
 | Modul | Aufgabe | Abhängigkeiten |
 | --- | --- | --- |
 | `db.js` | IndexedDB öffnen, Migrationen, Lesen und Schreiben der vier Listen und der Buchungen | — |
-| `konto.js` | Salden, Monatsabgrenzung, Übertrag, Naturalstrafen-Zählung | `db.js` |
+| `konto.js` | Salden, Monatsabgrenzung, Übertrag, Naturalstrafen-Zählung | keine |
 | `erfassen.js` | Startscreen, Spielerraster, Strafenblatt, Mehrfachmodus, Rückgängig | `db.js` |
 | `konten.js` | Kontenliste, Kontoauszug, Zahlung/Gutschrift/Verzug | `db.js`, `konto.js` |
 | `abschluss.js` | Dokument erzeugen, Abschluss markieren | `konto.js` |
 | `sicherung.js` | Export und Import der JSON-Sicherung, Altersprüfung | `db.js` |
 | `verwaltung.js` | Stammdaten, Einrichtungsassistent | `db.js` |
 
-Jedes Modul ist ohne Kenntnis der Innereien der anderen benutzbar; `konto.js`
-rechnet und kennt keine Oberfläche.
+Jedes Modul ist ohne Kenntnis der Innereien der anderen benutzbar. `konto.js`
+rechnet über übergebene Buchungslisten und kennt weder Datenbank noch
+Oberfläche — deshalb ist er der Teil, der automatisiert geprüft wird.
+`store.js` hält den geladenen Bestand im Speicher, damit das Spielerraster ohne
+Datenbankzugriff neu zeichnen kann.
 
 ## Fehlerfälle
 

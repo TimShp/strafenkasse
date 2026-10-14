@@ -1,0 +1,11 @@
+{
+  "name": "strafenkasse",
+  "version": "1.0.0",
+  "description": "Strafen der Handballmannschaft in der Halle erfassen und am Monatsende abrechnen. Installierbare PWA, alle Daten lokal.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/konto.test.mjs",
+    "start": "python -m http.server 8778"
+  }
+}

@@ -1,0 +1,338 @@
+/* Strafenkasse — Oberflaeche.
+   Farben vom Hallenboden: dunkles Platzgruen, sandfarbene Linien, Harz als Akzent.
+   Die Striche auf den Kacheln sind die Strichliste aus dem Notizbuch, das die App ersetzt. */
+
+@font-face { font-family: Barlow; src: url(../fonts/Barlow-400.woff2) format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: Barlow; src: url(../fonts/Barlow-500.woff2) format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: Barlow; src: url(../fonts/Barlow-600.woff2) format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Barlow Condensed'; src: url(../fonts/BarlowCondensed-600.woff2) format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Barlow Condensed'; src: url(../fonts/BarlowCondensed-700.woff2) format('woff2'); font-weight: 700; font-display: swap; }
+
+:root {
+  --boden: #0e2b2a;
+  --boden-2: #143634;
+  --boden-3: #1d4542;
+  --linie: #e3d6ac;
+  --linie-schwach: rgba(227, 214, 172, 0.16);
+  --kreide: #f3f2ec;
+  --nebel: #9fb5b2;
+  --harz: #d08a3e;
+  --harz-tief: #a9682a;
+  --guthaben: #74bda1;
+  --warn: #cf5a4b;
+
+  --platz: 16px;
+  --rund: 14px;
+  --sicher-unten: env(safe-area-inset-bottom, 0px);
+  --schrift: Barlow, system-ui, -apple-system, sans-serif;
+  --schmal: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { background: var(--boden); }
+
+body {
+  margin: 0;
+  padding: 0 0 calc(74px + var(--sicher-unten));
+  background:
+    radial-gradient(120% 60% at 50% 0%, var(--boden-2) 0%, var(--boden) 70%) no-repeat,
+    var(--boden);
+  color: var(--kreide);
+  font: 400 16px/1.45 var(--schrift);
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: contain;
+}
+
+h1, h2, h3 { font-family: var(--schmal); font-weight: 700; letter-spacing: 0.01em; margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--harz); outline-offset: 2px; }
+.versteckt { display: none !important; }
+
+/* --- Kopf ----------------------------------------------------------------- */
+
+.kopf {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) var(--platz) 12px;
+}
+.kopf--zurueck { flex-wrap: wrap; align-items: center; }
+.kopf--gross { padding-top: calc(env(safe-area-inset-top, 0px) + 40px); }
+.kopf-titel { font-size: 28px; line-height: 1; }
+.kopf-titel--gross { font-size: 40px; }
+.kopf-zeile { margin: 4px 0 0; color: var(--nebel); font-size: 14px; }
+.kopf-person { flex: 1 1 auto; }
+.kopf-kasse { text-align: right; font-variant-numeric: tabular-nums; }
+.kopf-kasse-wert { display: block; font-family: var(--schmal); font-size: 26px; color: var(--harz); line-height: 1; }
+.kopf-kasse-wert.guthaben { color: var(--guthaben); }
+.kopf-kasse-label { font-size: 12px; color: var(--nebel); }
+.knopf-zurueck { flex: 0 0 100%; margin-bottom: 6px; padding: 0; color: var(--nebel); font-family: var(--schmal); font-size: 17px; }
+
+/* --- Schalter und Wahlleiste ---------------------------------------------- */
+
+.schalter {
+  display: flex; gap: 4px; margin: 0 var(--platz) 14px;
+  padding: 4px; background: rgba(0, 0, 0, 0.22); border-radius: 11px;
+}
+.schalter-knopf {
+  flex: 1; min-height: 38px; border: 0; border-radius: 8px; background: transparent;
+  color: var(--nebel); font-family: var(--schmal); font-size: 16px; cursor: pointer;
+}
+.schalter-knopf--an { background: var(--boden-3); color: var(--kreide); }
+
+.wahlleiste { display: flex; gap: 8px; align-items: stretch; margin: 0 var(--platz) 14px; }
+.wahlleiste-knopf {
+  flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 52px; padding: 0 14px; text-align: left; cursor: pointer;
+  background: var(--boden-2); border: 1px dashed var(--linie-schwach); border-radius: var(--rund);
+}
+.wahlleiste-name { font-family: var(--schmal); font-size: 19px; }
+.wahlleiste-betrag { color: var(--harz); font-variant-numeric: tabular-nums; }
+
+/* --- Spielerraster -------------------------------------------------------- */
+
+.raster {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  padding: 0 var(--platz);
+}
+@media (min-width: 420px) { .raster { grid-template-columns: repeat(4, 1fr); } }
+
+.kachel {
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  gap: 4px; min-height: 92px; padding: 10px 6px 8px; cursor: pointer;
+  background: var(--boden-2); border: 1px solid var(--linie-schwach); border-radius: var(--rund);
+  transition: transform 90ms ease, background-color 120ms ease;
+}
+.kachel:active { transform: scale(0.96); background: var(--boden-3); }
+.kachel--aktiv { border-color: rgba(208, 138, 62, 0.45); }
+.kachel--markiert { background: var(--harz-tief); border-color: var(--harz); }
+.kachel-name {
+  font-family: var(--schmal); font-size: 20px; line-height: 1.05; text-align: center;
+  overflow-wrap: anywhere;
+}
+.kachel-striche { display: flex; align-items: center; min-height: 18px; }
+.kachel-saldo { font-size: 12px; color: var(--nebel); font-variant-numeric: tabular-nums; }
+.kachel-saldo--guthaben { color: var(--guthaben); }
+
+.striche { display: block; }
+.striche line { stroke: var(--linie); stroke-width: 2; stroke-linecap: round; }
+.striche--leer { display: block; height: 18px; }
+.striche--zahl { font-family: var(--schmal); font-size: 16px; color: var(--linie); }
+
+/* --- Listen und Zeilen ---------------------------------------------------- */
+
+.abschnitt-titel {
+  display: flex; align-items: center; gap: 8px;
+  margin: 24px var(--platz) 8px; font-size: 19px; color: var(--kreide);
+}
+.abschnitt-zahl {
+  min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--boden-3);
+  font-family: var(--schrift); font-size: 12px; font-weight: 600; text-align: center;
+}
+.tagesliste-leer, .fussnote { margin: 0 var(--platz); color: var(--nebel); font-size: 14px; }
+.fussnote { margin-top: 20px; }
+
+.zeile {
+  display: grid; grid-template-columns: 54px 1fr auto 34px; align-items: center; gap: 8px;
+  padding: 10px var(--platz); border-top: 1px solid var(--linie-schwach);
+}
+.zeile:last-child { border-bottom: 1px solid var(--linie-schwach); }
+.zeile-zeit { color: var(--nebel); font-size: 13px; font-variant-numeric: tabular-nums; }
+.zeile-text { font-size: 15px; overflow-wrap: anywhere; }
+.zeile-notiz { color: var(--nebel); }
+.zeile-betrag { font-family: var(--schmal); font-size: 18px; font-variant-numeric: tabular-nums; }
+.zeile-betrag--gut { color: var(--guthaben); }
+.zeile--natural .zeile-betrag { color: var(--linie); }
+.zeile-weg {
+  justify-self: end; width: 32px; height: 32px; border: 0; border-radius: 8px;
+  background: transparent; color: var(--nebel); cursor: pointer;
+}
+.zeile-weg:active { background: var(--boden-3); color: var(--warn); }
+
+.kontenliste { margin-top: 8px; }
+.kontozeile {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px;
+  padding: 0 var(--platz); border: 0; border-top: 1px solid var(--linie-schwach);
+  background: transparent; text-align: left; cursor: pointer;
+}
+.kontozeile:last-child { border-bottom: 1px solid var(--linie-schwach); }
+.kontozeile:active { background: var(--boden-2); }
+.kontozeile-name { flex: 1; font-family: var(--schmal); font-size: 21px; }
+.kontozeile-stand { font-family: var(--schmal); font-size: 21px; color: var(--harz); font-variant-numeric: tabular-nums; }
+.kontozeile-stand--guthaben { color: var(--guthaben); }
+.kontozeile-stand--null { color: var(--nebel); }
+.merker {
+  padding: 2px 8px; border: 1px solid var(--linie-schwach); border-radius: 999px;
+  color: var(--linie); font-size: 12px;
+}
+
+/* --- Knoepfe -------------------------------------------------------------- */
+
+.aktionsreihe { display: flex; gap: 8px; padding: 6px var(--platz) 2px; }
+.aktionsreihe--unten { padding-top: 24px; }
+.knopf {
+  min-height: 50px; padding: 0 18px; border-radius: 12px; border: 1px solid transparent;
+  font-family: var(--schmal); font-size: 18px; cursor: pointer; background: var(--boden-3);
+}
+.knopf--voll { background: var(--harz); color: #1b1203; border-color: var(--harz); font-weight: 700; }
+.knopf--rand { background: transparent; border-color: var(--linie-schwach); color: var(--kreide); }
+.knopf--still { background: transparent; color: var(--nebel); }
+.knopf--warn { background: var(--warn); color: #fff; border-color: var(--warn); }
+.knopf--breit { flex: 1; width: 100%; }
+.knopf:active { transform: scale(0.98); }
+.knopf-still { border: 0; background: transparent; color: var(--nebel); cursor: pointer; font-size: 18px; min-height: 40px; }
+
+/* --- Blatt von unten ------------------------------------------------------ */
+
+.hintergrund { position: fixed; inset: 0; background: rgba(4, 16, 15, 0.6); z-index: 40; }
+.blatt {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  max-height: 86vh; display: flex; flex-direction: column;
+  padding: 8px 0 calc(12px + var(--sicher-unten));
+  background: var(--boden-2); border-top: 1px solid var(--linie-schwach);
+  border-radius: 20px 20px 0 0;
+  transform: translateY(100%); transition: transform 180ms ease-out;
+}
+.blatt--offen { transform: translateY(0); }
+.blatt-griff { width: 40px; height: 4px; margin: 0 auto 6px; border-radius: 2px; background: var(--linie-schwach); }
+.blatt-kopf { display: flex; align-items: center; justify-content: space-between; padding: 4px var(--platz) 8px; }
+.blatt-kopf h2 { font-size: 22px; }
+.blatt-text { margin: 0 var(--platz) 12px; color: var(--nebel); font-size: 15px; max-width: 62ch; }
+.blatt-aktion { display: flex; gap: 8px; padding: 12px var(--platz) 0; }
+.blatt-aktion .knopf { flex: 1; }
+
+.artenliste { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.artzeile {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 54px; padding: 0 var(--platz); border: 0;
+  border-top: 1px solid var(--linie-schwach); background: transparent; text-align: left; cursor: pointer;
+}
+.artzeile:active { background: var(--boden-3); }
+.artzeile--haeufig { background: rgba(208, 138, 62, 0.07); }
+.artzeile-name { font-size: 16px; }
+.artzeile-betrag { font-family: var(--schmal); font-size: 18px; color: var(--harz); font-variant-numeric: tabular-nums; }
+.artzeile-betrag--gut { color: var(--guthaben); }
+
+/* --- Formulare ------------------------------------------------------------ */
+
+.formular { display: flex; flex-direction: column; gap: 10px; padding: 0 var(--platz); min-height: 0; overflow-y: auto; }
+.formular--seite { padding: 8px var(--platz) 0; gap: 14px; }
+.feld {
+  width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--linie-schwach); background: rgba(0, 0, 0, 0.2);
+  color: var(--kreide); font: 400 17px/1.3 var(--schrift);
+}
+.feld--gross { font-family: var(--schmal); font-size: 30px; text-align: center; }
+.feld--mehrzeilig { min-height: 160px; line-height: 1.6; resize: vertical; }
+.feld--fehler { border-color: var(--warn); }
+.feld::placeholder { color: rgba(159, 181, 178, 0.7); }
+.etikett { display: flex; flex-direction: column; gap: 6px; color: var(--nebel); font-size: 14px; }
+.kasten { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 2px; color: var(--kreide); }
+.kasten input { width: 22px; height: 22px; accent-color: var(--harz); }
+.wahlliste { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--platz); }
+.suche { display: block; width: calc(100% - 2 * var(--platz)); margin: 0 var(--platz) 8px; min-height: 46px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--linie-schwach); background: rgba(0, 0, 0, 0.2); color: var(--kreide); font: 400 16px var(--schrift); }
+
+/* --- Menue, Abschluss, Hinweise ------------------------------------------- */
+
+.menue { margin: 14px 0; }
+.menuezeile {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 60px; padding: 8px var(--platz); border: 0;
+  border-top: 1px solid var(--linie-schwach); background: transparent; text-align: left;
+}
+.menue .menuezeile:last-child { border-bottom: 1px solid var(--linie-schwach); }
+.menuezeile--aus { opacity: 0.55; }
+.menuezeile-zeile { display: block; color: var(--nebel); font-size: 13px; }
+.menuezeile-pfeil { color: var(--nebel); font-size: 20px; }
+.menuezeile-knoepfe { display: flex; gap: 4px; flex: 0 0 auto; }
+.menuezeile-knoepfe .knopf-still { font-size: 15px; padding: 0 6px; }
+
+.monatswahl { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 4px var(--platz) 0; }
+.monatswahl-text { font-family: var(--schmal); font-size: 21px; min-width: 9ch; text-align: center; }
+.vorschau { margin-top: 6px; }
+.vorschau-zeile {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline;
+  padding: 8px var(--platz); border-top: 1px solid var(--linie-schwach);
+}
+.vorschau-mitte { color: var(--nebel); font-size: 13px; }
+
+.leer { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; padding: 30px var(--platz); color: var(--nebel); }
+.warnhinweis {
+  margin: 10px var(--platz); padding: 12px 14px; border-radius: 12px;
+  border: 1px solid rgba(207, 90, 75, 0.5); background: rgba(207, 90, 75, 0.12);
+  color: var(--kreide); font-size: 14px;
+}
+.kisten { margin-top: 18px; }
+.kisten-aktion { display: flex; gap: 8px; padding: 0 var(--platz); }
+
+/* --- Reiterleiste --------------------------------------------------------- */
+
+.reiter {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 6px 4px calc(6px + var(--sicher-unten));
+  background: rgba(10, 34, 33, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--linie-schwach);
+}
+.reiter-knopf {
+  min-height: 46px; border: 0; background: transparent; color: var(--nebel);
+  font-family: var(--schmal); font-size: 16px; border-radius: 10px; cursor: pointer;
+}
+.reiter-knopf--an { color: var(--kreide); background: var(--boden-3); }
+
+/* --- Toast ---------------------------------------------------------------- */
+
+.toast {
+  position: fixed; left: var(--platz); right: var(--platz); z-index: 60;
+  bottom: calc(84px + var(--sicher-unten));
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--linie); color: #16302e;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  transform: translateY(8px); opacity: 0; transition: opacity 160ms ease, transform 160ms ease;
+}
+.toast--offen { transform: translateY(0); opacity: 1; }
+.toast--warn { background: var(--warn); color: #fff; }
+.toast-text { flex: 1; font-size: 15px; }
+.toast-knopf {
+  border: 0; background: rgba(0, 0, 0, 0.14); color: inherit; cursor: pointer;
+  padding: 8px 12px; border-radius: 9px; font-family: var(--schmal); font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blatt, .toast, .kachel, .knopf { transition: none; }
+  .kachel:active, .knopf:active { transform: none; }
+}
+
+/* --- Abrechnung (nur Druck) ----------------------------------------------- */
+
+#druck { display: none; }
+
+@media print {
+  body { background: #fff; color: #000; padding: 0; font: 400 10pt/1.4 var(--schrift); }
+  #buehne, .reiter, .toast, .blatt, .hintergrund { display: none !important; }
+  #druck { display: block; padding: 0; }
+
+  .d-titel { font-size: 20pt; }
+  .d-unter { margin: 2pt 0 14pt; color: #444; font-size: 9pt; }
+  .d-h2 { margin: 18pt 0 6pt; font-size: 14pt; }
+  .d-h2--trenner { page-break-before: always; }
+  .d-h3 { display: flex; justify-content: space-between; margin: 0 0 4pt; font-size: 12pt; border-bottom: 1px solid #000; }
+  .d-h3-saldo { font-variant-numeric: tabular-nums; }
+  .d-block { margin: 0 0 14pt; page-break-inside: avoid; }
+  .d-leer { margin: 0; color: #555; font-size: 9pt; }
+  .d-liste { margin: 0 0 8pt 14pt; padding: 0; }
+  .d-hinweis { margin: 6pt 0 0; font-size: 9pt; color: #333; }
+
+  .d-tabelle { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .d-tabelle th { text-align: left; font-family: var(--schmal); font-size: 10pt; border-bottom: 1px solid #000; padding: 3pt 4pt; }
+  .d-tabelle td { padding: 2.5pt 4pt; border-bottom: 0.5pt solid #ccc; }
+  .d-tabelle--klein td { font-size: 9pt; }
+  .d-tabelle .r { text-align: right; }
+  .d-tabelle .b { font-weight: 600; }
+  .d-datum { white-space: nowrap; color: #444; width: 16mm; }
+  .d-summe td { border-top: 1px solid #000; border-bottom: 0; font-weight: 600; }
+  tr { page-break-inside: avoid; }
+}
+
+@page { size: A4 portrait; margin: 14mm 12mm; }
