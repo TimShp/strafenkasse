@@ -14,6 +14,18 @@ mehrere trifft: Strafe wählen, Spieler antippen, gemeinsam buchen. Jede Buchung
 lässt sich fünf Sekunden lang rückgängig machen, danach über die Tagesliste
 löschen. Die Striche auf den Kacheln zeigen, was heute schon erfasst ist.
 
+**Phrasen** — Strafenarten können den Wortlaut abfragen; beim Katalog aus der
+Saison 25/26 ist das für „Phrase" gesetzt. Die Buchung ist gespeichert, bevor das
+Feld aufgeht, und „Später" überspringt es — im Training darf das Tippen nichts
+aufhalten. Fehlende Zitate stehen mit „Zitat nachtragen" in der Tagesliste und im
+Phrasenbuch. Das Phrasenbuch unter „Mehr" sammelt alle Zitate nach Monaten; sie
+hängen an ihren Buchungen und überdauern jeden Monatsabschluss.
+
+**Kisten** — „Kopftreffer", „30. oder 40. Tor" und „Verweigern" sind
+Naturalstrafen: kein Eurobetrag, kein Anteil an irgendeiner Geldsumme. Sie stehen
+als „Offen: 1 Kiste" im Kontoauszug und werden dort abgehakt, wenn die Kiste
+kommt, oder zum hinterlegten Kistenpreis in Geld abgelöst.
+
 **Konten** — Saldo je Spieler, absteigend. Im Kontoauszug werden Zahlungseingang,
 Gutschrift und Verzug gebucht; offene Kisten lassen sich als geliefert abhaken
 oder in Geld ablösen.
@@ -64,7 +76,7 @@ npm test
 ```
 
 Geprüft wird der Rechenkern (`js/konto.js`): Salden, Übertrag, Vorzeichen,
-Gutschriften, Naturalstrafen, Verzugsvorschlag, Rundung. Oberfläche und
+Gutschriften, Naturalstrafen, Verzugsvorschlag, Zitate, Rundung. Oberfläche und
 Offline-Betrieb werden am Gerät geprüft — Installation, Flugmodus, buchen,
 App schließen, erneut öffnen.
 

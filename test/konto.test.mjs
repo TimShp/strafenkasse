@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { saldo, offeneKisten, abrechnung, monatsgrenzen, verzugVorschlag, rund } from '../js/konto.js';
+import { saldo, offeneKisten, abrechnung, monatsgrenzen, verzugVorschlag, zitate, rund } from '../js/konto.js';
 
 const iso = (j, m, t, h = 12) => new Date(j, m - 1, t, h).toISOString();
 
@@ -99,4 +99,29 @@ test('Krumme Centbetraege runden sauber', () => {
   const b = Array.from({ length: 7 }, (_, i) => strafe(iso(2026, 10, i + 1), 0.75));
   assert.equal(saldo(b), 5.25);
   assert.equal(rund(0.1 + 0.2), 0.3);
+});
+
+test('Zitate kommen neueste zuerst und ohne leere', () => {
+  const b = [
+    strafe(iso(2026, 10, 1), 0.75, { zitat: 'Der Ball muss ins Tor' }),
+    strafe(iso(2026, 10, 2), 0.75),
+    strafe(iso(2026, 10, 3), 0.75, { zitat: 'Wir nehmen Spiel für Spiel' })
+  ];
+  const z = zitate(b);
+  assert.equal(z.length, 2);
+  assert.equal(z[0].zitat, 'Wir nehmen Spiel für Spiel');
+});
+
+test('Zitate lassen sich auf einen Monat eingrenzen, bleiben aber erhalten', () => {
+  const b = [
+    strafe(iso(2026, 9, 20), 0.75, { zitat: 'alte Phrase' }),
+    strafe(iso(2026, 10, 2), 0.75, { zitat: 'neue Phrase' })
+  ];
+  const okt = monatsgrenzen(2026, 10);
+  assert.equal(zitate(b, okt.von, okt.bis).length, 1);
+  assert.equal(zitate(b).length, 2, 'ohne Zeitraum bleibt die alte Phrase sichtbar');
+});
+
+test('Ein Zitat aendert den Saldo nicht', () => {
+  assert.equal(saldo([strafe(iso(2026, 10, 1), 0.75, { zitat: 'teuer' })]), 0.75);
 });

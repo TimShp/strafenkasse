@@ -2,7 +2,7 @@
 // kein Bestaetigungsdialog. Korrektur laeuft ueber Rueckgaengig und die Tagesliste.
 
 import { el, leeren, blatt, blattSchliessen, toast, haptik, strichliste, anhaengen } from './ui.js';
-import { S, aktiveSpieler, aktiveArten, spielerName, art, buchen, buchungLoeschen } from './store.js';
+import { S, aktiveSpieler, aktiveArten, spielerName, art, buchen, buchungLoeschen, buchungAendern } from './store.js';
 import { eur, uhr, monatName, betragLesen } from './format.js';
 import { saldo, monatsgrenzen, EINHEIT_KISTE } from './konto.js';
 
@@ -159,9 +159,9 @@ async function buchenEine(wurzel, spieler, a) {
   const satz = await schreiben(spieler.id, a);
   haptik();
   zeichnen(wurzel);
-  toast(`${spieler.name} · ${a.name} · ${betragText(a)}`, {
-    rueckgaengig: async () => { await buchungLoeschen(satz.id); zeichnen(wurzel); }
-  });
+  const rueckgaengig = async () => { await buchungLoeschen(satz.id); zeichnen(wurzel); };
+  if (a.zitat) return zitatBlatt(wurzel, [satz], `${spieler.name} · ${a.name} · ${betragText(a)} ist gebucht.`, rueckgaengig);
+  toast(`${spieler.name} · ${a.name} · ${betragText(a)}`, { rueckgaengig });
 }
 
 async function mehrfachBuchen(wurzel) {
@@ -173,13 +173,46 @@ async function mehrfachBuchen(wurzel) {
   auswahl.clear();
   haptik();
   zeichnen(wurzel);
-  toast(`${ids.length} × ${a.name} gebucht`, {
-    rueckgaengig: async () => {
-      for (const s of saetze) await buchungLoeschen(s.id);
-      zeichnen(wurzel);
-    }
-  });
+  const rueckgaengig = async () => {
+    for (const s of saetze) await buchungLoeschen(s.id);
+    zeichnen(wurzel);
+  };
+  if (a.zitat) return zitatBlatt(wurzel, saetze, `${ids.length} × ${a.name} ist gebucht.`, rueckgaengig);
+  toast(`${ids.length} × ${a.name} gebucht`, { rueckgaengig });
 }
+
+// --- Zitat ----------------------------------------------------------------
+// Die Buchung steht schon, wenn dieses Blatt aufgeht. Das Zitat ist ein
+// Nachtrag, kein Pflichtfeld - sonst kostet die haeufigste Strafe im Training
+// jedes Mal eine Tastatur.
+
+export function zitatBlatt(wurzel, saetze, hinweis, rueckgaengig) {
+  const feld = el('input', {
+    class: 'feld', type: 'text', placeholder: 'Wortlaut', 'aria-label': 'Was wurde gesagt?',
+    autocapitalize: 'sentences', value: saetze[0]?.zitat ?? ''
+  });
+  const speichern = async () => {
+    const text = feld.value.trim();
+    blattSchliessen();
+    if (text) for (const s of saetze) await buchungAendern(s.id, { zitat: text });
+    zeichnen(wurzel);
+    toast(text ? `„${text}" festgehalten` : hinweis, { rueckgaengig });
+  };
+  feld.addEventListener('keydown', e => { if (e.key === 'Enter') speichern(); });
+  blatt({
+    titel: 'Was wurde gesagt?',
+    inhalt: el('div', { class: 'formular' }, el('p', { class: 'blatt-text', text: hinweis }), feld),
+    aktion: el('div', { class: 'blatt-aktion' },
+      el('button', {
+        class: 'knopf knopf--still', type: 'button', text: 'Später',
+        onclick: () => { blattSchliessen(); toast(hinweis, { rueckgaengig }); }
+      }),
+      el('button', { class: 'knopf knopf--voll', type: 'button', text: 'Festhalten', onclick: speichern })
+    )
+  });
+  setTimeout(() => feld.focus(), 60);
+}
+
 
 function schreiben(spielerId, a, betrag = null, notiz = null) {
   const wert = betrag ?? a.betrag;
@@ -241,7 +274,14 @@ function tagesliste(wurzel) {
       el('span', { class: 'zeile-text' },
         el('strong', { text: spielerName(b.spielerId) }), ' · ',
         b.bezeichnung ?? art(b.strafenartId)?.name ?? 'Strafe',
-        b.notiz ? el('span', { class: 'zeile-notiz', text: ` (${b.notiz})` }) : null
+        b.notiz ? el('span', { class: 'zeile-notiz', text: ` (${b.notiz})` }) : null,
+        b.zitat ? el('span', { class: 'zitat', text: `„${b.zitat}"` }) : null,
+        !b.zitat && art(b.strafenartId)?.zitat
+          ? el('button', {
+              class: 'zitat-fehlt', type: 'button', text: 'Zitat nachtragen',
+              onclick: () => zitatBlatt(wurzel, [b], `${spielerName(b.spielerId)} · ${b.bezeichnung}`, null)
+            })
+          : null
       ),
       el('span', { class: 'zeile-betrag', text: b.einheit === EINHEIT_KISTE ? `${b.menge} Kiste` : eur(b.betrag) }),
       el('button', {

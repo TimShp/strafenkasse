@@ -53,12 +53,12 @@ Vier Stammdatenlisten und **eine** Buchungstabelle.
 
 ```
 Spieler      { id, anzeigename, vollname?, aktiv, sortierung }
-Strafenart   { id, name, betrag, vorzeichen, einheit, aktiv, haeufigkeit }
+Strafenart   { id, name, betrag, vorzeichen, einheit, zitat, frei, aktiv, rang }
 Amt          { id, name, inhaber[] }            // Spieler-ids
 Saison       { id, bezeichnung, von, bis, jahresbeitrag }
 
 Buchung      { id, spielerId, art, strafenartId?, bezeichnung, datum, betrag,
-               menge, einheit, notiz?, erledigt? }
+               menge, einheit, notiz?, zitat?, erledigt? }
 ```
 
 - `art` ∈ `strafe` · `jahresbeitrag` · `zahlung` · `gutschrift` · `verzug`
@@ -70,6 +70,9 @@ Buchung      { id, spielerId, art, strafenartId?, bezeichnung, datum, betrag,
   gelesen. Eine Preisänderung verändert alte Monate nicht.
 - `vorzeichen` deckt Strafenarten ab, die Guthaben erzeugen („Kacken in
   Gegnerkabine", 5 € Gutschrift).
+- `zitat` an der Strafenart heißt: Nach dem Buchen wird der Wortlaut abgefragt
+  und in der Buchung abgelegt. Gesetzt für „Phrase" (Nachtrag vom 15.10.2026).
+  Das Zitat hängt damit an der Buchung und überdauert den Monatsabschluss.
 
 **Der Saldo ist immer die Summe der Buchungen, nie ein gespeicherter Wert.**
 Damit kann die Lücke aus der Excel strukturell nicht entstehen: Was gebucht ist,
@@ -103,11 +106,23 @@ kommen und gehen, Preise ändern sich.
   Suchfeld oben.
 - Tap auf Strafenart → gebucht, Blatt schließt, Haptik, Toast
   „Nelson · Phrase · 0,75 € — Rückgängig" für 5 Sekunden.
+- Bei einer Strafenart mit `zitat` folgt ein Feld für den Wortlaut. **Die Buchung
+  steht zu diesem Zeitpunkt schon**, und „Später" überspringt das Feld: Die
+  Phrase ist mit Abstand die häufigste Strafe, ein Pflichtfeld würde die
+  Erfassung im Training ausbremsen und im Zweifel ganz verhindern. Fehlende
+  Zitate erscheinen in der Tagesliste als „Zitat nachtragen".
 - **Umschaltbarer zweiter Modus:** erst Strafenart, dann mehrere Spieler
   antippen, dann „3 Spieler buchen". Für „die drei kamen zu spät".
 - Darunter die Buchungen des heutigen Tages mit Uhrzeit, jede einzeln löschbar.
 
 Keine Bestätigungsdialoge. Korrektur läuft über Rückgängig und die Tagesliste.
+
+### Phrasenbuch
+
+Unter „Mehr": alle Zitate nach Monaten, neueste zuerst, mit Spieler und Datum,
+antippbar zum Ändern. Darüber die Buchungen, die noch auf den Wortlaut warten.
+Im Monatsdokument stehen die Phrasen des Monats als eigener Abschnitt und
+zusätzlich bei den Einzelposten des Spielers.
 
 ### Konten
 

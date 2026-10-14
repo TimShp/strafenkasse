@@ -72,6 +72,16 @@ export function abrechnung(buchungen, von, bis) {
   };
 }
 
+/**
+ * Alle festgehaltenen Zitate, neueste zuerst. Optional auf einen Zeitraum
+ * begrenzt. Zitate ueberdauern den Monatsabschluss - die Buchungen bleiben.
+ */
+export function zitate(buchungen, von = null, bis = null) {
+  return buchungen
+    .filter(b => b.zitat && (!von || b.datum >= von) && (!bis || b.datum < bis))
+    .sort((a, b) => b.datum.localeCompare(a.datum));
+}
+
 /** Nach Spieler gruppieren, damit die Oberflaeche nicht n-mal filtern muss. */
 export function nachSpieler(buchungen) {
   const map = new Map();

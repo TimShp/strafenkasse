@@ -1,10 +1,11 @@
 // Strafenkatalog aus der Abrechnung Saison 25/26.
 // rang = Haeufigkeit in der Bestandsdatei; bestimmt die Sortierung im Strafenblatt.
 // vorzeichen: 1 = Belastung, -1 = Gutschrift.
+// zitat: true = nach dem Buchen wird der Wortlaut abgefragt (Phrasenbuch).
 // einheit: 'eur' = Geldstrafe, 'kiste' = Naturalstrafe (zaehlt Stueck, kein Geld).
 
 export const STRAFENARTEN = [
-  { name: 'Phrase',                        betrag: 0.75, einheit: 'eur',   vorzeichen: 1, rang: 57 },
+  { name: 'Phrase',                        betrag: 0.75, einheit: 'eur',   vorzeichen: 1, rang: 57, zitat: true },
   { name: 'Verspätung Training ≤ 10 min',  betrag: 5,    einheit: 'eur',   vorzeichen: 1, rang: 25 },
   { name: 'Modestrafe',                    betrag: 1,    einheit: 'eur',   vorzeichen: 1, rang: 11 },
   { name: 'Amt vernachlässigt',            betrag: 10,   einheit: 'eur',   vorzeichen: 1, rang: 9 },

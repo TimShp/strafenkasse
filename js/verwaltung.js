@@ -8,14 +8,15 @@ import { S, laden, melden, einstellung, buchen, buchungenVon, aktiveSpieler } fr
 import { eur, betragLesen, datum } from './format.js';
 import { STRAFENARTEN, AEMTER, VORGABEN } from './seed.js';
 import { sicherungTeilen, sicherungEinlesen, sicherungAlter } from './sicherung.js';
-import { EINHEIT_KISTE } from './konto.js';
+import { EINHEIT_KISTE, zitate } from './konto.js';
+import { zitatBlatt } from './erfassen.js';
 
 let unterseite = 'index';
 export function oeffne(seite) { unterseite = seite ?? 'index'; }
 
 export function zeichnen(wurzel) {
   leeren(wurzel);
-  const seiten = { index, spieler, arten, aemter, saison };
+  const seiten = { index, spieler, arten, aemter, saison, phrasen };
   (seiten[unterseite] ?? index)(wurzel);
 }
 
@@ -50,7 +51,8 @@ function index(wurzel) {
       eintrag('Kader', `${aktiveSpieler().length} Spieler`, 'spieler'),
       eintrag('Strafenarten', `${S.arten.filter(a => a.aktiv !== false).length} aktiv`, 'arten'),
       eintrag('Ämter', `${S.aemter.length} Ämter`, 'aemter'),
-      eintrag('Saison und Beitrag', S.einstellungen.saison || 'nicht gesetzt', 'saison')
+      eintrag('Saison und Beitrag', S.einstellungen.saison || 'nicht gesetzt', 'saison'),
+      eintrag('Phrasenbuch', `${zitate(S.buchungen).length} festgehalten`, 'phrasen')
     ),
     el('section', { class: 'menue' },
       eintrag('Sicherung teilen',
@@ -192,11 +194,13 @@ function artAendern(wurzel, a) {
   const betrag = el('input', { class: 'feld', type: 'text', inputmode: 'decimal', value: a && !a.frei ? String(a.betrag).replace('.', ',') : '', placeholder: '0,00', 'aria-label': 'Betrag' });
   const kiste = el('input', { type: 'checkbox', id: 'f-kiste', checked: a?.einheit === EINHEIT_KISTE });
   const gut = el('input', { type: 'checkbox', id: 'f-gut', checked: (a?.vorzeichen ?? 1) < 0 });
+  const zit = el('input', { type: 'checkbox', id: 'f-zitat', checked: !!a?.zitat });
   blatt({
     titel: a ? 'Strafenart ändern' : 'Neue Strafenart',
     inhalt: el('div', { class: 'formular' }, name, betrag,
       el('label', { class: 'kasten', for: 'f-kiste' }, kiste, el('span', { text: 'Naturalstrafe (Kiste, kein Geld)' })),
-      el('label', { class: 'kasten', for: 'f-gut' }, gut, el('span', { text: 'Gutschrift statt Belastung' }))
+      el('label', { class: 'kasten', for: 'f-gut' }, gut, el('span', { text: 'Gutschrift statt Belastung' })),
+      el('label', { class: 'kasten', for: 'f-zitat' }, zit, el('span', { text: 'Wortlaut abfragen (Phrasenbuch)' }))
     ),
     aktion: el('div', { class: 'blatt-aktion' },
       el('button', { class: 'knopf knopf--still', type: 'button', text: 'Abbrechen', onclick: blattSchliessen }),
@@ -213,6 +217,7 @@ function artAendern(wurzel, a) {
             vorzeichen: gut.checked ? -1 : 1,
             rang: a?.rang ?? 0,
             frei: a?.frei ?? false,
+            zitat: zit.checked,
             aktiv: a?.aktiv ?? true
           });
           await laden(); blattSchliessen(); zeichnen(wurzel); melden();
@@ -261,6 +266,55 @@ function amtBesetzen(wurzel, amt) {
     )
   });
 }
+
+// --- Phrasenbuch ----------------------------------------------------------
+// Die Zitate haengen an ihren Buchungen und ueberdauern damit jeden
+// Monatsabschluss. Hier stehen sie als eigene Sammlung, nach Monaten.
+
+function phrasen(wurzel) {
+  const alle = zitate(S.buchungen);
+  const offen = S.buchungen.filter(b => !b.zitat && S.arten.find(a => a.id === b.strafenartId)?.zitat);
+
+  anhaengen(wurzel, kopf(wurzel, 'Phrasenbuch', `${alle.length} ${alle.length === 1 ? 'Zitat' : 'Zitate'} seit Beginn`));
+
+  if (offen.length) {
+    anhaengen(wurzel, el('p', { class: 'warnhinweis', text: `${offen.length} ${offen.length === 1 ? 'Buchung wartet' : 'Buchungen warten'} noch auf den Wortlaut.` }));
+    const liste = el('section', { class: 'menue' });
+    for (const b of offen.slice().reverse().slice(0, 20)) {
+      liste.append(el('button', {
+        class: 'menuezeile', type: 'button',
+        onclick: () => zitatBlatt(wurzel, [b], `${spielerNameVon(b.spielerId)} · ${b.bezeichnung} vom ${datum(b.datum)}`, null)
+      },
+        el('span', {}, el('strong', { text: spielerNameVon(b.spielerId) }), el('span', { class: 'menuezeile-zeile', text: datum(b.datum) })),
+        el('span', { class: 'menuezeile-pfeil', text: 'nachtragen' })
+      ));
+    }
+    anhaengen(wurzel, liste);
+  }
+
+  if (alle.length === 0) {
+    anhaengen(wurzel, el('div', { class: 'leer' }, el('p', { text: 'Noch kein Zitat festgehalten. Die erste Phrase kommt bestimmt.' })));
+    return;
+  }
+
+  let letzterMonat = '';
+  const sammlung = el('section', {});
+  for (const b of alle) {
+    const d = new Date(b.datum);
+    const monat = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    if (monat !== letzterMonat) {
+      sammlung.append(el('h2', { class: 'abschnitt-titel', text: monat }));
+      letzterMonat = monat;
+    }
+    sammlung.append(el('div', { class: 'phrasenzeile', onclick: () => zitatBlatt(wurzel, [b], `${spielerNameVon(b.spielerId)} · ${datum(b.datum)}`, null) },
+      el('span', { class: 'phrasen-wort', text: `„${b.zitat}"` }),
+      el('span', { class: 'phrasen-quelle', text: `${spielerNameVon(b.spielerId)} · ${datum(b.datum)}` })
+    ));
+  }
+  anhaengen(wurzel, sammlung);
+}
+
+const spielerNameVon = id => S.spieler.find(s => s.id === id)?.name ?? 'Unbekannt';
 
 // --- Saison, Beitrag, Konto ----------------------------------------------
 

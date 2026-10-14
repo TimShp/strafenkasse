@@ -2,7 +2,7 @@
 // Zurueck-Wisch auf dem iPhone tut, was er soll.
 
 import { $, el, toast } from './ui.js';
-import { S, laden } from './store.js';
+import { S, laden, nachziehen } from './store.js';
 import * as erfassen from './erfassen.js';
 import * as konten from './konten.js';
 import * as abschluss from './abschluss.js';
@@ -71,6 +71,7 @@ async function start() {
     return;
   }
 
+  await nachziehen();
   document.body.append(reiterleiste());
   window.addEventListener('hashchange', zeichnen);
   zeichnen();

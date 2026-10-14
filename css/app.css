@@ -139,6 +139,16 @@ button { font: inherit; color: inherit; }
 .zeile-zeit { color: var(--nebel); font-size: 13px; font-variant-numeric: tabular-nums; }
 .zeile-text { font-size: 15px; overflow-wrap: anywhere; }
 .zeile-notiz { color: var(--nebel); }
+.zitat { display: block; color: var(--linie); font-style: italic; }
+.zitat-fehlt {
+  display: inline-block; margin-top: 2px; padding: 3px 9px; cursor: pointer;
+  border: 1px dashed var(--linie-schwach); border-radius: 999px;
+  background: transparent; color: var(--nebel); font-size: 12px;
+}
+.phrasenzeile { padding: 10px var(--platz); border-top: 1px solid var(--linie-schwach); }
+.phrasenzeile:last-child { border-bottom: 1px solid var(--linie-schwach); }
+.phrasen-wort { display: block; font-family: var(--schmal); font-size: 19px; color: var(--kreide); }
+.phrasen-quelle { color: var(--nebel); font-size: 13px; }
 .zeile-betrag { font-family: var(--schmal); font-size: 18px; font-variant-numeric: tabular-nums; }
 .zeile-betrag--gut { color: var(--guthaben); }
 .zeile--natural .zeile-betrag { color: var(--linie); }
@@ -331,6 +341,7 @@ button { font: inherit; color: inherit; }
   .d-tabelle .r { text-align: right; }
   .d-tabelle .b { font-weight: 600; }
   .d-datum { white-space: nowrap; color: #444; width: 16mm; }
+  .d-zitat { font-style: italic; }
   .d-summe td { border-top: 1px solid #000; border-bottom: 0; font-weight: 600; }
   tr { page-break-inside: avoid; }
 }

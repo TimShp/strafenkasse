@@ -3,7 +3,7 @@
 // jede Zehntelsekunde zwischen Tap und Rueckmeldung.
 
 import * as db from './db.js';
-import { VORGABEN } from './seed.js';
+import { STRAFENARTEN, VORGABEN } from './seed.js';
 
 export const S = {
   spieler: [],
@@ -27,6 +27,23 @@ export async function laden() {
   S.aemter = aemter.sort((a, b) => a.name.localeCompare(b.name, 'de'));
   S.buchungen = buchungen.sort((a, b) => a.datum.localeCompare(b.datum));
   for (const satz of metaSaetze) S.einstellungen[satz.key] = satz.wert;
+}
+
+/**
+ * Merkmale, die der Katalog nach der Einrichtung bekommen hat, in bestehende
+ * Strafenarten nachziehen - sonst fehlt einer alten Installation das
+ * Zitatfeld. Vergleicht ueber den Namen und aendert nur, was fehlt.
+ */
+export async function nachziehen() {
+  const aenderungen = [];
+  for (const vorlage of STRAFENARTEN) {
+    if (!vorlage.zitat) continue;
+    const vorhanden = S.arten.find(a => a.name === vorlage.name);
+    if (vorhanden && !vorhanden.zitat) aenderungen.push({ ...vorhanden, zitat: true });
+  }
+  if (aenderungen.length === 0) return;
+  await db.setzen('strafenarten', aenderungen);
+  for (const a of aenderungen) Object.assign(S.arten.find(x => x.id === a.id), a);
 }
 
 export const aktiveSpieler = () => S.spieler.filter(s => s.aktiv !== false);

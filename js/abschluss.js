@@ -5,7 +5,7 @@
 import { el, leeren, toast, fragen, anhaengen } from './ui.js';
 import { S, aktiveSpieler, buchungenVon, einstellung } from './store.js';
 import { eur, datum, monatName } from './format.js';
-import { abrechnung, monatsgrenzen, EINHEIT_KISTE } from './konto.js';
+import { abrechnung, monatsgrenzen, zitate, EINHEIT_KISTE } from './konto.js';
 import { sicherungTeilen } from './sicherung.js';
 
 const jetzt = new Date();
@@ -136,6 +136,22 @@ function dokumentBauen(daten, von, bis) {
     );
   }
 
+  // Phrasen des Monats
+  const worte = zitate(S.buchungen, von, bis);
+  if (worte.length) {
+    const t = el('table', { class: 'd-tabelle d-tabelle--klein' });
+    const tb = el('tbody');
+    for (const b of worte) {
+      tb.append(el('tr', {},
+        el('td', { class: 'd-datum', text: datum(b.datum) }),
+        el('td', { class: 'd-zitat', text: `„${b.zitat}"` }),
+        el('td', { class: 'r', text: S.spieler.find(s => s.id === b.spielerId)?.name ?? '' })
+      ));
+    }
+    t.append(tb);
+    ziel.append(el('h2', { class: 'd-h2', text: `Phrasen des Monats (${worte.length})` }), t);
+  }
+
   // Einzelauflistung
   ziel.append(el('h2', { class: 'd-h2 d-h2--trenner', text: 'Einzelposten' }));
   for (const { spieler, a } of daten) {
@@ -152,7 +168,9 @@ function dokumentBauen(daten, von, bis) {
       for (const b of a.posten) {
         tb.append(el('tr', {},
           el('td', { class: 'd-datum', text: datum(b.datum) }),
-          el('td', {}, (b.bezeichnung ?? 'Buchung') + (b.notiz ? ` (${b.notiz})` : '')),
+          el('td', {},
+            (b.bezeichnung ?? 'Buchung') + (b.notiz ? ` (${b.notiz})` : ''),
+            b.zitat ? el('span', { class: 'd-zitat', text: ` „${b.zitat}"` }) : null),
           el('td', { class: 'r', text: b.einheit === EINHEIT_KISTE ? `${b.menge} Kiste` : eur(b.betrag) })
         ));
       }
