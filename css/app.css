@@ -202,7 +202,7 @@ body.blatt-auf { overflow: hidden; }
   max-height: 86vh;
   max-height: calc(92dvh - var(--tastatur, 0px));
   display: flex; flex-direction: column; overflow: hidden;
-  padding: 8px 0 calc(12px + var(--sicher-unten));
+  padding: 8px 0 calc(24px + var(--sicher-unten));
   background: var(--boden-2); border-top: 1px solid var(--linie-schwach);
   border-radius: 20px 20px 0 0;
   transform: translateY(100%); transition: transform 180ms ease-out;
@@ -219,7 +219,7 @@ body.blatt-auf { overflow: hidden; }
 .blatt-kopf { display: flex; align-items: center; justify-content: space-between; padding: 4px var(--platz) 8px; }
 .blatt-kopf h2 { font-size: 22px; }
 .blatt-text { margin: 0 var(--platz) 12px; color: var(--nebel); font-size: 15px; max-width: 62ch; }
-.blatt-aktion { display: flex; gap: 8px; padding: 12px var(--platz) 0; }
+.blatt-aktion { display: flex; gap: 8px; padding: 16px var(--platz) 6px; }
 .blatt-aktion .knopf { flex: 1; }
 
 .artenliste { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
@@ -236,7 +236,7 @@ body.blatt-auf { overflow: hidden; }
 
 /* --- Formulare ------------------------------------------------------------ */
 
-.formular { display: flex; flex-direction: column; gap: 10px; padding: 0 var(--platz); min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.formular { display: flex; flex-direction: column; gap: 12px; padding: 0 var(--platz) 4px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .formular--seite { padding: 8px var(--platz) 0; gap: 14px; }
 .feld {
   width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 12px;

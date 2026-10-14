@@ -55,8 +55,13 @@ iOS bietet die Installation nicht an.
 **Lokal ansehen**
 
 ```bash
-python -m http.server 8778
+python serve.py 8778
 ```
+
+`serve.py` schickt `Cache-Control: no-store`. Der eingebaute `http.server` tut
+das nicht, und Safari haelt dann auf dem iPhone an der alten Fassung fest —
+eine Änderung scheint dann wirkungslos, obwohl sie längst auf dem Server liegt.
+Unter „Mehr" steht unten die ausgelieferte Fassung; daran lässt sich das prüfen.
 
 **Veröffentlichen (GitHub Pages)** — Repository anlegen, Inhalt pushen, unter
 *Settings → Pages* die Quelle auf den Branch stellen. Die App liegt danach unter

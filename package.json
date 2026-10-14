@@ -6,6 +6,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/konto.test.mjs",
-    "start": "python -m http.server 8778"
+    "start": "python serve.py 8778"
   }
 }

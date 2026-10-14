@@ -9,6 +9,9 @@ import { eur, betragLesen, datum } from './format.js';
 import { STRAFENARTEN, AEMTER, VORGABEN } from './seed.js';
 import { sicherungTeilen, sicherungEinlesen, sicherungAlter } from './sicherung.js';
 import { EINHEIT_KISTE, zitate } from './konto.js';
+
+/** Steht unter „Mehr". Bei jeder ausgelieferten Aenderung hochzaehlen. */
+export const FASSUNG = '1.3 vom 15.10.2026';
 import { zitatBlatt } from './erfassen.js';
 
 let unterseite = 'index';
@@ -61,7 +64,7 @@ function index(wurzel) {
       eintrag('Sicherung einlesen', 'ersetzt den Bestand', () => dateiWaehlen())
     ),
     alter.faellig ? el('p', { class: 'warnhinweis', text: 'Die letzte Sicherung ist älter als 14 Tage. Alles liegt nur auf diesem Handy.' }) : null,
-    el('p', { class: 'fussnote', text: `${S.buchungen.length} Buchungen gespeichert · Version 1.0` })
+    el('p', { class: 'fussnote', text: `${S.buchungen.length} Buchungen gespeichert · Fassung ${FASSUNG}` })
   );
 }
 
