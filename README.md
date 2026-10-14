@@ -63,9 +63,9 @@ das nicht, und Safari haelt dann auf dem iPhone an der alten Fassung fest —
 eine Änderung scheint dann wirkungslos, obwohl sie längst auf dem Server liegt.
 Unter „Mehr" steht unten die ausgelieferte Fassung; daran lässt sich das prüfen.
 
-**Veröffentlichen (GitHub Pages)** — Repository anlegen, Inhalt pushen, unter
-*Settings → Pages* die Quelle auf den Branch stellen. Die App liegt danach unter
-`https://<konto>.github.io/<repo>/`.
+**Veröffentlicht** unter <https://timshp.github.io/strafenkasse/> (GitHub Pages,
+Repository `TimShp/strafenkasse`, Branch `main`, Ordner `/`). Ein `git push` auf
+`main` verteilt jede Änderung; der Bau dauert etwa eine Minute.
 
 **Auf dem iPhone installieren** — Adresse in Safari öffnen, Teilen-Symbol, „Zum
 Home-Bildschirm". Erst damit läuft sie im Vollbild und ist vom
