@@ -74,10 +74,15 @@ export function blatt({ titel, inhalt, aktion }) {
     el('h2', { text: titel }),
     el('button', { class: 'knopf-still', type: 'button', onclick: blattSchliessen, 'aria-label': 'Schließen', text: '✕' })
   );
+  // Der Inhalt bekommt immer einen Flex-Kontext: ohne ihn greift die
+  // Scroll-Eigenschaft der inneren Liste nicht, das Blatt waechst aus dem
+  // Bildschirm und der Finger scrollt die Seite dahinter.
+  const rumpf = el('div', { class: 'blatt-inhalt' }, ...(Array.isArray(inhalt) ? inhalt : [inhalt]));
   const b = el('section', { class: 'blatt', role: 'dialog', 'aria-modal': 'true', 'aria-label': titel },
-    el('div', { class: 'blatt-griff' }), kopf, inhalt, aktion
+    el('div', { class: 'blatt-griff' }), kopf, rumpf, aktion
   );
   document.body.append(hintergrund, b);
+  document.body.classList.add('blatt-auf');
   requestAnimationFrame(() => b.classList.add('blatt--offen'));
   offenesBlatt = { hintergrund, b };
   // Kein automatischer Fokus: sonst faehrt auf dem iPhone bei jeder Strafe die
@@ -91,10 +96,24 @@ export function blattSchliessen() {
   offenesBlatt = null;
   b.classList.remove('blatt--offen');
   hintergrund.remove();
+  document.body.classList.remove('blatt-auf');
   setTimeout(() => b.remove(), 180);
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') blattSchliessen(); });
+
+// Die Tastatur verdeckt auf dem iPhone den unteren Bildschirmrand, an dem das
+// Blatt klebt. visualViewport meldet, wie viel - das Blatt rueckt entsprechend hoch.
+if (window.visualViewport) {
+  const messen = () => {
+    const v = window.visualViewport;
+    const verdeckt = Math.max(0, window.innerHeight - v.height - v.offsetTop);
+    document.documentElement.style.setProperty('--tastatur', `${Math.round(verdeckt)}px`);
+  };
+  window.visualViewport.addEventListener('resize', messen);
+  window.visualViewport.addEventListener('scroll', messen);
+  messen();
+}
 
 // --- Toast mit Rueckgaengig ------------------------------------------------
 

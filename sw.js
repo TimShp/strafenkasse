@@ -1,7 +1,7 @@
 // Service Worker: die App-Huelle liegt im Cache, damit in der Halle ohne Netz
 // alles laeuft. Daten liegen in IndexedDB und laufen hier nicht durch.
 
-const CACHE = 'strafenkasse-v2';
+const CACHE = 'strafenkasse-v3';
 
 const HUELLE = [
   './',

@@ -193,15 +193,27 @@ button { font: inherit; color: inherit; }
 
 /* --- Blatt von unten ------------------------------------------------------ */
 
-.hintergrund { position: fixed; inset: 0; background: rgba(4, 16, 15, 0.6); z-index: 40; }
+.hintergrund { position: fixed; inset: 0; background: rgba(4, 16, 15, 0.6); z-index: 40; touch-action: none; }
+/* Solange ein Blatt offen ist, haelt die Seite dahinter still. */
+body.blatt-auf { overflow: hidden; }
 .blatt {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-  max-height: 86vh; display: flex; flex-direction: column;
+  position: fixed; left: 0; right: 0; z-index: 50;
+  bottom: var(--tastatur, 0px);
+  max-height: 86vh;
+  max-height: calc(92dvh - var(--tastatur, 0px));
+  display: flex; flex-direction: column; overflow: hidden;
   padding: 8px 0 calc(12px + var(--sicher-unten));
   background: var(--boden-2); border-top: 1px solid var(--linie-schwach);
   border-radius: 20px 20px 0 0;
   transform: translateY(100%); transition: transform 180ms ease-out;
 }
+/* Steht die Tastatur, braucht es unten keinen Platz fuer den Home-Balken mehr. */
+.blatt-inhalt {
+  display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto;
+  overflow: hidden;
+}
+.blatt-aktion { flex: 0 0 auto; }
+.blatt-kopf, .blatt-griff { flex: 0 0 auto; }
 .blatt--offen { transform: translateY(0); }
 .blatt-griff { width: 40px; height: 4px; margin: 0 auto 6px; border-radius: 2px; background: var(--linie-schwach); }
 .blatt-kopf { display: flex; align-items: center; justify-content: space-between; padding: 4px var(--platz) 8px; }
@@ -224,7 +236,7 @@ button { font: inherit; color: inherit; }
 
 /* --- Formulare ------------------------------------------------------------ */
 
-.formular { display: flex; flex-direction: column; gap: 10px; padding: 0 var(--platz); min-height: 0; overflow-y: auto; }
+.formular { display: flex; flex-direction: column; gap: 10px; padding: 0 var(--platz); min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .formular--seite { padding: 8px var(--platz) 0; gap: 14px; }
 .feld {
   width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 12px;
@@ -294,7 +306,7 @@ button { font: inherit; color: inherit; }
 
 .toast {
   position: fixed; left: var(--platz); right: var(--platz); z-index: 60;
-  bottom: calc(84px + var(--sicher-unten));
+  bottom: calc(84px + var(--sicher-unten) + var(--tastatur, 0px));
   display: flex; align-items: center; gap: 12px;
   padding: 12px 14px; border-radius: 12px;
   background: var(--linie); color: #16302e;

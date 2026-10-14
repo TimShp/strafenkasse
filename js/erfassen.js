@@ -149,7 +149,7 @@ function strafenblatt(wurzel, gewaehlt) {
   }
 
   fuellen();
-  blatt({ titel: 'Welche Strafe?', inhalt: el('div', {}, suche, liste) });
+  blatt({ titel: 'Welche Strafe?', inhalt: [suche, liste] });
 }
 
 // --- Buchen ---------------------------------------------------------------
@@ -189,7 +189,7 @@ async function mehrfachBuchen(wurzel) {
 export function zitatBlatt(wurzel, saetze, hinweis, rueckgaengig) {
   const feld = el('input', {
     class: 'feld', type: 'text', placeholder: 'Wortlaut', 'aria-label': 'Was wurde gesagt?',
-    autocapitalize: 'sentences', value: saetze[0]?.zitat ?? ''
+    autocapitalize: 'sentences', enterkeyhint: 'done', value: saetze[0]?.zitat ?? ''
   });
   const speichern = async () => {
     const text = feld.value.trim();
