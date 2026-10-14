@@ -14,6 +14,13 @@ mehrere trifft: Strafe wählen, Spieler antippen, gemeinsam buchen. Jede Buchung
 lässt sich fünf Sekunden lang rückgängig machen, danach über die Tagesliste
 löschen. Die Striche auf den Kacheln zeigen, was heute schon erfasst ist.
 
+**Erfassungstag** — Über der Umschaltleiste steht, für welchen Tag gerade erfasst
+wird. Beim Abtippen aus dem Notizbuch stellt man ihn auf den Trainingstag, erfasst
+den Block und stellt weiter; die Uhrzeit kommt vom Moment der Eingabe. Ein
+zurückgestellter Tag ist farbig markiert und beim nächsten Start der App wieder
+auf heute — ein unbemerkt falsches Datum auf jeder Buchung wäre der teuerste
+Fehler, den dieser Schalter machen kann.
+
 **Phrasen** — Strafenarten können den Wortlaut abfragen; beim Katalog aus der
 Saison 25/26 ist das für „Phrase" gesetzt. Die Buchung ist gespeichert, bevor das
 Feld aufgeht, und „Später" überspringt es — im Training darf das Tippen nichts

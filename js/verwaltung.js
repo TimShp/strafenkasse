@@ -11,7 +11,7 @@ import { sicherungTeilen, sicherungEinlesen, sicherungAlter } from './sicherung.
 import { EINHEIT_KISTE, zitate } from './konto.js';
 
 /** Steht unter „Mehr". Bei jeder ausgelieferten Aenderung hochzaehlen. */
-export const FASSUNG = '1.3 vom 15.10.2026';
+export const FASSUNG = '1.4 vom 15.10.2026';
 import { zitatBlatt } from './erfassen.js';
 
 let unterseite = 'index';

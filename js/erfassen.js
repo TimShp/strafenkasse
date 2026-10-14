@@ -10,12 +10,34 @@ let modus = 'spieler';      // 'spieler' = Spieler zuerst, 'strafe' = Strafe zue
 let gewaehlteArt = null;    // im Modus 'strafe'
 let auswahl = new Set();    // im Modus 'strafe': markierte Spieler
 
-const tagesbeginn = () => {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
+// Erfassungstag. null heisst heute. Wird beim Abtippen aus dem Notizbuch auf den
+// jeweiligen Trainingstag gestellt, damit die Buchungen nicht alle den Tag der
+// Eingabe tragen. Beim Neustart der App steht er wieder auf heute - eine
+// zurueckgestellte Erfassung soll nicht unbemerkt weiterlaufen.
+let erfassungstag = null;
+
+const alsTag = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const gewaehlterTag = () => erfassungstag ? new Date(erfassungstag) : alsTag(new Date());
+const istHeute = () => !erfassungstag;
+
+const tagesbeginn = () => gewaehlterTag().toISOString();
+const tagesende = () => {
+  const d = gewaehlterTag();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString();
 };
 
-const heuteBuchungen = () => S.buchungen.filter(b => b.datum >= tagesbeginn() && b.art === 'strafe');
+/** Zeitstempel einer neuen Buchung: gewaehlter Tag, aktuelle Uhrzeit. */
+function buchungszeit() {
+  if (istHeute()) return new Date().toISOString();
+  const jetzt = new Date();
+  const d = gewaehlterTag();
+  d.setHours(jetzt.getHours(), jetzt.getMinutes(), jetzt.getSeconds(), 0);
+  return d.toISOString();
+}
+
+const heuteBuchungen = () => S.buchungen.filter(b =>
+  b.datum >= tagesbeginn() && b.datum < tagesende() && b.art === 'strafe');
 
 export function zeichnen(wurzel) {
   leeren(wurzel);
@@ -36,11 +58,76 @@ export function zeichnen(wurzel) {
         el('span', { class: 'kopf-kasse-label', text: 'offen' })
       )
     ),
+    tagleiste(wurzel),
     modusschalter(wurzel),
     modus === 'strafe' ? strafenwahlLeiste(wurzel) : null,
     raster(wurzel),
     tagesliste(wurzel)
   );
+}
+
+function tagleiste(wurzel) {
+  const tag = gewaehlterTag();
+  const lang = tag.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (istHeute()) {
+    return el('button', {
+      class: 'tagleiste', type: 'button', onclick: () => tagBlatt(wurzel)
+    },
+      el('span', { class: 'tagleiste-text', text: `Erfassung für heute, ${lang}` }),
+      el('span', { class: 'tagleiste-wechsel', text: 'ändern' })
+    );
+  }
+  return el('div', { class: 'tagleiste tagleiste--zurueck' },
+    el('button', { class: 'tagleiste-knopf', type: 'button', onclick: () => tagBlatt(wurzel) },
+      el('span', { class: 'tagleiste-text', text: `Erfassung für ${lang}` })
+    ),
+    el('button', {
+      class: 'tagleiste-weg', type: 'button', text: 'Heute',
+      onclick: () => { erfassungstag = null; zeichnen(wurzel); toast('Zurück auf heute'); }
+    })
+  );
+}
+
+function tagBlatt(wurzel) {
+  const heute = alsTag(new Date());
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const feld = el('input', {
+    class: 'feld', type: 'date', value: iso(gewaehlterTag()), max: iso(heute),
+    'aria-label': 'Tag, für den erfasst wird'
+  });
+
+  const setzen = d => {
+    erfassungstag = d && d.getTime() !== heute.getTime() ? d : null;
+    blattSchliessen();
+    zeichnen(wurzel);
+    toast(istHeute()
+      ? 'Erfassung läuft auf heute'
+      : `Erfassung läuft auf ${gewaehlterTag().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}`);
+  };
+
+  const schnell = (text, verschiebung) => el('button', {
+    class: 'knopf knopf--rand', type: 'button', text,
+    onclick: () => { const d = alsTag(new Date()); d.setDate(d.getDate() - verschiebung); setzen(d); }
+  });
+
+  blatt({
+    titel: 'Für welchen Tag?',
+    inhalt: el('div', { class: 'formular' },
+      el('p', { class: 'blatt-text', text: 'Beim Abtippen aus dem Notizbuch: Tag des Trainings einstellen, den Block erfassen, dann weiterstellen. Die Uhrzeit kommt von jetzt.' }),
+      feld,
+      el('div', { class: 'schnellwahl' }, schnell('Heute', 0), schnell('Gestern', 1), schnell('Vorgestern', 2))
+    ),
+    aktion: el('div', { class: 'blatt-aktion' },
+      el('button', { class: 'knopf knopf--still', type: 'button', text: 'Abbrechen', onclick: blattSchliessen }),
+      el('button', {
+        class: 'knopf knopf--voll', type: 'button', text: 'Übernehmen', onclick: () => {
+          if (!feld.value) { feld.classList.add('feld--fehler'); return; }
+          const [j, m, t] = feld.value.split('-').map(Number);
+          setzen(new Date(j, m - 1, t));
+        }
+      })
+    )
+  });
 }
 
 function modusschalter(wurzel) {
@@ -221,7 +308,7 @@ function schreiben(spielerId, a, betrag = null, notiz = null) {
     art: 'strafe',
     strafenartId: a.id,
     bezeichnung: a.name,
-    datum: new Date().toISOString(),
+    datum: buchungszeit(),
     betrag: a.einheit === EINHEIT_KISTE ? 0 : (a.vorzeichen ?? 1) * wert,
     menge: a.einheit === EINHEIT_KISTE ? wert : 1,
     einheit: a.einheit ?? 'eur',
@@ -261,11 +348,14 @@ function freierBetrag(wurzel, spieler, a, ids = null) {
 
 function tagesliste(wurzel) {
   const heute = heuteBuchungen().slice().reverse();
+  const titel = istHeute()
+    ? 'Heute'
+    : gewaehlterTag().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
   const abschnitt = el('section', { class: 'tagesliste' },
-    el('h2', { class: 'abschnitt-titel' }, 'Heute', el('span', { class: 'abschnitt-zahl', text: heute.length })),
+    el('h2', { class: 'abschnitt-titel' }, titel, el('span', { class: 'abschnitt-zahl', text: heute.length })),
   );
   if (heute.length === 0) {
-    abschnitt.append(el('p', { class: 'tagesliste-leer', text: 'Noch nichts erfasst. Tippe einen Spieler an.' }));
+    abschnitt.append(el('p', { class: 'tagesliste-leer', text: istHeute() ? 'Noch nichts erfasst. Tippe einen Spieler an.' : 'Für diesen Tag ist nichts erfasst.' }));
     return abschnitt;
   }
   for (const b of heute) {

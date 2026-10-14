@@ -88,6 +88,32 @@ button { font: inherit; color: inherit; }
 .wahlleiste-name { font-family: var(--schmal); font-size: 19px; }
 .wahlleiste-betrag { color: var(--harz); font-variant-numeric: tabular-nums; }
 
+/* Erfassungstag. Im Normalfall leise, bei zurueckgestelltem Tag unuebersehbar -
+   nichts waere schlimmer als ein unbemerkt falsches Datum auf jeder Buchung. */
+.tagleiste {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: calc(100% - 2 * var(--platz)); margin: 0 var(--platz) 10px;
+  min-height: 40px; padding: 6px 12px; cursor: pointer;
+  background: transparent; border: 1px solid var(--linie-schwach); border-radius: 10px;
+  color: var(--nebel); font: 400 13px var(--schrift); text-align: left;
+}
+.tagleiste-wechsel { color: var(--harz); font-size: 13px; }
+.tagleiste--zurueck {
+  padding: 6px 6px 6px 12px;
+  background: rgba(208, 138, 62, 0.14); border-color: var(--harz); color: var(--kreide);
+}
+.tagleiste--zurueck .tagleiste-text { font-family: var(--schmal); font-size: 17px; }
+.tagleiste-knopf {
+  flex: 1; border: 0; background: transparent; text-align: left; cursor: pointer; padding: 0;
+}
+.tagleiste-weg {
+  flex: 0 0 auto; min-height: 32px; padding: 0 12px; cursor: pointer;
+  border: 0; border-radius: 8px; background: var(--harz); color: #1b1203;
+  font-family: var(--schmal); font-size: 15px; font-weight: 700;
+}
+.schnellwahl { display: flex; gap: 8px; }
+.schnellwahl .knopf { flex: 1; min-height: 44px; font-size: 16px; }
+
 /* --- Spielerraster -------------------------------------------------------- */
 
 .raster {
