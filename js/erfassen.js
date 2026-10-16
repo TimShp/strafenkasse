@@ -276,19 +276,40 @@ async function mehrfachBuchen(wurzel) {
 export function zitatBlatt(wurzel, saetze, hinweis, rueckgaengig) {
   const feld = el('input', {
     class: 'feld', type: 'text', placeholder: 'Wortlaut', 'aria-label': 'Was wurde gesagt?',
-    autocapitalize: 'sentences', enterkeyhint: 'done', value: saetze[0]?.zitat ?? ''
+    autocapitalize: 'sentences', enterkeyhint: 'next', value: saetze[0]?.zitat ?? ''
   });
+  // Der Kontext traegt die Situation, nicht den Satz: "Es geht um Urlaub".
+  // Vorbelegt mit dem letzten Kontext desselben Tages - dadurch entstehen
+  // Gespraechsfolgen, ohne dass irgendetwas verknuepft werden muesste.
+  const uebernommen = saetze[0]?.kontext ?? letzterKontext();
+  const kontextFeld = el('input', {
+    class: 'feld feld--leise', type: 'text', placeholder: 'Kontext (optional)',
+    'aria-label': 'Worum ging es?', autocapitalize: 'sentences', enterkeyhint: 'done',
+    value: uebernommen
+  });
+
   const speichern = async () => {
     const text = feld.value.trim();
+    const kontext = kontextFeld.value.trim();
     blattSchliessen();
-    if (text) for (const s of saetze) await buchungAendern(s.id, { zitat: text });
+    if (text) for (const s of saetze) await buchungAendern(s.id, { zitat: text, kontext: kontext || null });
     zeichnen(wurzel);
     toast(text ? `„${text}" festgehalten` : hinweis, { rueckgaengig });
   };
-  feld.addEventListener('keydown', e => { if (e.key === 'Enter') speichern(); });
+
+  feld.addEventListener('keydown', e => { if (e.key === 'Enter') kontextFeld.focus(); });
+  kontextFeld.addEventListener('keydown', e => { if (e.key === 'Enter') speichern(); });
+
   blatt({
     titel: 'Was wurde gesagt?',
-    inhalt: el('div', { class: 'formular' }, el('p', { class: 'blatt-text', text: hinweis }), feld),
+    inhalt: el('div', { class: 'formular' },
+      el('p', { class: 'blatt-text', text: hinweis }),
+      feld,
+      kontextFeld,
+      uebernommen && !saetze[0]?.kontext
+        ? el('p', { class: 'blatt-fussnote', text: 'Kontext vom letzten Zitat übernommen — löschen, wenn es um etwas anderes geht.' })
+        : null
+    ),
     aktion: el('div', { class: 'blatt-aktion' },
       el('button', {
         class: 'knopf knopf--still', type: 'button', text: 'Später',
@@ -298,6 +319,14 @@ export function zitatBlatt(wurzel, saetze, hinweis, rueckgaengig) {
     )
   });
   setTimeout(() => feld.focus(), 60);
+}
+
+/** Der zuletzt vergebene Kontext des Erfassungstags, aus den Daten gelesen. */
+function letzterKontext() {
+  const amTag = S.buchungen
+    .filter(b => b.datum >= tagesbeginn() && b.datum < tagesende() && b.kontext)
+    .sort((a, b) => a.datum.localeCompare(b.datum));
+  return amTag.length ? amTag[amTag.length - 1].kontext : '';
 }
 
 
@@ -365,7 +394,9 @@ function tagesliste(wurzel) {
         el('strong', { text: spielerName(b.spielerId) }), ' · ',
         b.bezeichnung ?? art(b.strafenartId)?.name ?? 'Strafe',
         b.notiz ? el('span', { class: 'zeile-notiz', text: ` (${b.notiz})` }) : null,
-        b.zitat ? el('span', { class: 'zitat', text: `„${b.zitat}"` }) : null,
+        b.zitat ? el('span', { class: 'zitat' },
+          `„${b.zitat}"`,
+          b.kontext ? el('span', { class: 'zitat-kontext', text: ` · ${b.kontext}` }) : null) : null,
         !b.zitat && art(b.strafenartId)?.zitat
           ? el('button', {
               class: 'zitat-fehlt', type: 'button', text: 'Zitat nachtragen',

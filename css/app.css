@@ -166,11 +166,17 @@ button { font: inherit; color: inherit; }
 .zeile-text { font-size: 15px; overflow-wrap: anywhere; }
 .zeile-notiz { color: var(--nebel); }
 .zitat { display: block; color: var(--linie); font-style: italic; }
+.zitat-kontext { font-style: normal; color: var(--nebel); }
 .zitat-fehlt {
   display: inline-block; margin-top: 2px; padding: 3px 9px; cursor: pointer;
   border: 1px dashed var(--linie-schwach); border-radius: 999px;
   background: transparent; color: var(--nebel); font-size: 12px;
 }
+.phrasen-gruppe {
+  margin: 16px var(--platz) 2px; color: var(--nebel); font-size: 13px;
+}
+.phrasen-tag { font-family: var(--schmal); font-size: 15px; color: var(--linie); }
+.phrasen-kontext { color: var(--linie); }
 .phrasenzeile { padding: 10px var(--platz); border-top: 1px solid var(--linie-schwach); }
 .phrasenzeile:last-child { border-bottom: 1px solid var(--linie-schwach); }
 .phrasen-wort { display: block; font-family: var(--schmal); font-size: 19px; color: var(--kreide); }
@@ -272,6 +278,8 @@ body.blatt-auf { overflow: hidden; }
 .feld--gross { font-family: var(--schmal); font-size: 30px; text-align: center; }
 .feld--mehrzeilig { min-height: 160px; line-height: 1.6; resize: vertical; }
 .feld--fehler { border-color: var(--warn); }
+.feld--leise { font-size: 15px; background: rgba(0, 0, 0, 0.12); }
+.blatt-fussnote { margin: -2px 0 0; color: var(--nebel); font-size: 12px; }
 .feld::placeholder { color: rgba(159, 181, 178, 0.7); }
 .etikett { display: flex; flex-direction: column; gap: 6px; color: var(--nebel); font-size: 14px; }
 .kasten { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 2px; color: var(--kreide); }
@@ -294,7 +302,9 @@ body.blatt-auf { overflow: hidden; }
 .menuezeile-knoepfe { display: flex; gap: 4px; flex: 0 0 auto; }
 .menuezeile-knoepfe .knopf-still { font-size: 15px; padding: 0 6px; }
 
-.monatswahl { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 4px var(--platz) 0; }
+.zeitraum { padding: 4px 0 0; }
+.monatswahl { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 4px var(--platz) 0; }
+.monatswahl-etikett { min-width: 3ch; color: var(--nebel); font-size: 13px; }
 .monatswahl-text { font-family: var(--schmal); font-size: 21px; min-width: 9ch; text-align: center; }
 .vorschau { margin-top: 6px; }
 .vorschau-zeile {
@@ -380,6 +390,7 @@ body.blatt-auf { overflow: hidden; }
   .d-tabelle .b { font-weight: 600; }
   .d-datum { white-space: nowrap; color: #444; width: 16mm; }
   .d-zitat { font-style: italic; }
+  .d-gruppe td { font-weight: 600; border-bottom: 0; padding-top: 6pt; }
   .d-summe td { border-top: 1px solid #000; border-bottom: 0; font-weight: 600; }
   tr { page-break-inside: avoid; }
 }

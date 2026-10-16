@@ -25,8 +25,16 @@ Fehler, den dieser Schalter machen kann.
 Saison 25/26 ist das für „Phrase" gesetzt. Die Buchung ist gespeichert, bevor das
 Feld aufgeht, und „Später" überspringt es — im Training darf das Tippen nichts
 aufhalten. Fehlende Zitate stehen mit „Zitat nachtragen" in der Tagesliste und im
-Phrasenbuch. Das Phrasenbuch unter „Mehr" sammelt alle Zitate nach Monaten; sie
-hängen an ihren Buchungen und überdauern jeden Monatsabschluss.
+Phrasenbuch. Das Phrasenbuch unter „Mehr" sammelt alle Zitate; sie hängen an
+ihren Buchungen und überdauern jeden Abschluss.
+
+Neben dem Wortlaut gibt es ein zweites, freiwilliges Feld: **Kontext** („Es geht
+um Urlaub"). Es ist mit dem zuletzt vergebenen Kontext desselben Erfassungstags
+vorbelegt, damit eine Wortfolge mehrerer Spieler ohne Tipparbeit zusammenfindet.
+**Gleicher Tag plus gleicher Kontext ergibt eine Gruppe** — im Phrasenbuch und in
+der Abrechnung stehen diese Zitate untereinander unter einer Überschrift. Mehr
+Verknüpfung gibt es bewusst nicht: keine Threads, keine Antwortbezüge, nichts zu
+pflegen.
 
 **Kisten** — „Kopftreffer", „30. oder 40. Tor" und „Verweigern" sind
 Naturalstrafen: kein Eurobetrag, kein Anteil an irgendeiner Geldsumme. Sie stehen
@@ -37,9 +45,20 @@ kommt, oder zum hinterlegten Kistenpreis in Geld abgelöst.
 Gutschrift und Verzug gebucht; offene Kisten lassen sich als geliefert abhaken
 oder in Geld ablösen.
 
-**Abschluss** — Monat wählen, „Abrechnung erstellen". Es entsteht ein Dokument mit
+**Abschluss** — Zeitraum wählen („Von" und „Bis", standardmäßig der laufende
+Monat), dann „Abrechnung erstellen". Es entsteht ein Dokument mit
 Mannschaftsübersicht und Einzelauflistung je Spieler, das über den Druckdialog
 als PDF geteilt wird.
+
+Der Zeitraum darf mehrere Monate umfassen. Das ist für die **erste Abrechnung
+einer Saison** gedacht: Deckt sie nur den letzten Monat ab, verschwindet alles
+Ältere als eine einzige Zahl in der Spalte „Übertrag". Mit „August bis Oktober"
+steht jede Strafe einzeln im Dokument und der Übertrag ist null.
+
+**Verzug** entsteht nie automatisch — er wird einzeln im Kontoauszug gebucht,
+und der Vorschlagswert (doppelte Strafsumme des Vormonats) erscheint erst in
+diesem Dialog. Wer monatelang nicht zahlen konnte, weil es keine Abrechnung gab,
+bekommt also auch keinen.
 
 **Mehr** — Kader, Strafenarten, Ämter, Saison, Beitrag, IBAN und die Sicherung.
 

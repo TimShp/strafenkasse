@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { saldo, offeneKisten, abrechnung, monatsgrenzen, verzugVorschlag, zitate, rund } from '../js/konto.js';
+import { saldo, offeneKisten, abrechnung, monatsgrenzen, verzugVorschlag, zitate, zitatGruppen, rund } from '../js/konto.js';
 
 const iso = (j, m, t, h = 12) => new Date(j, m - 1, t, h).toISOString();
 
@@ -124,4 +124,46 @@ test('Zitate lassen sich auf einen Monat eingrenzen, bleiben aber erhalten', () 
 
 test('Ein Zitat aendert den Saldo nicht', () => {
   assert.equal(saldo([strafe(iso(2026, 10, 1), 0.75, { zitat: 'teuer' })]), 0.75);
+});
+
+test('Gleicher Tag und gleicher Kontext ergeben eine Gruppe', () => {
+  const b = [
+    strafe(iso(2026, 10, 7, 19), 0.75, { zitat: 'Urlaub ist Urlaub', kontext: 'Es geht um Urlaub' }),
+    strafe(iso(2026, 10, 7, 20), 0.75, { zitat: 'Ich fahre nach Malle', kontext: 'Es geht um Urlaub' }),
+    strafe(iso(2026, 10, 7, 21), 0.75, { zitat: 'Ohne Fleiß kein Preis' })
+  ];
+  const g = zitatGruppen(b);
+  assert.equal(g.length, 2);
+  const mitKontext = g.find(x => x.kontext);
+  assert.equal(mitKontext.posten.length, 2);
+  assert.equal(mitKontext.posten[0].zitat, 'Urlaub ist Urlaub', 'innerhalb der Gruppe chronologisch');
+});
+
+test('Gleicher Kontext an verschiedenen Tagen bleibt getrennt', () => {
+  const b = [
+    strafe(iso(2026, 10, 7, 19), 0.75, { zitat: 'eins', kontext: 'Urlaub' }),
+    strafe(iso(2026, 10, 9, 19), 0.75, { zitat: 'zwei', kontext: 'Urlaub' })
+  ];
+  assert.equal(zitatGruppen(b).length, 2);
+});
+
+test('Gross- und Kleinschreibung trennt keine Gruppe', () => {
+  const b = [
+    strafe(iso(2026, 10, 7, 19), 0.75, { zitat: 'eins', kontext: 'Urlaub' }),
+    strafe(iso(2026, 10, 7, 20), 0.75, { zitat: 'zwei', kontext: 'urlaub ' })
+  ];
+  assert.equal(zitatGruppen(b).length, 1);
+});
+
+test('Abrechnung über mehrere Monate hat keinen Übertrag und alle Posten', () => {
+  const b = [
+    beitrag(iso(2026, 8, 1), 150),
+    strafe(iso(2026, 8, 12), 5),
+    strafe(iso(2026, 9, 3), 0.75),
+    strafe(iso(2026, 10, 20), 10)
+  ];
+  const a = abrechnung(b, monatsgrenzen(2026, 8).von, monatsgrenzen(2026, 10).bis);
+  assert.equal(a.uebertrag, 0);
+  assert.equal(a.posten.length, 4);
+  assert.equal(a.saldo, 165.75);
 });

@@ -8,10 +8,10 @@ import { S, laden, melden, einstellung, buchen, buchungenVon, aktiveSpieler } fr
 import { eur, betragLesen, datum } from './format.js';
 import { STRAFENARTEN, AEMTER, VORGABEN } from './seed.js';
 import { sicherungTeilen, sicherungEinlesen, sicherungAlter } from './sicherung.js';
-import { EINHEIT_KISTE, zitate } from './konto.js';
+import { EINHEIT_KISTE, zitate, zitatGruppen } from './konto.js';
 
 /** Steht unter „Mehr". Bei jeder ausgelieferten Aenderung hochzaehlen. */
-export const FASSUNG = '1.4 vom 15.10.2026';
+export const FASSUNG = '1.5 vom 16.10.2026';
 import { zitatBlatt } from './erfassen.js';
 
 let unterseite = 'index';
@@ -300,19 +300,30 @@ function phrasen(wurzel) {
     return;
   }
 
+  // Gleicher Tag, gleicher Kontext: eine Gruppe. Mehr Verknuepfung gibt es nicht.
   let letzterMonat = '';
   const sammlung = el('section', {});
-  for (const b of alle) {
-    const d = new Date(b.datum);
+  for (const g of zitatGruppen(S.buchungen)) {
+    const d = new Date(g.datum);
     const monat = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     if (monat !== letzterMonat) {
       sammlung.append(el('h2', { class: 'abschnitt-titel', text: monat }));
       letzterMonat = monat;
     }
-    sammlung.append(el('div', { class: 'phrasenzeile', onclick: () => zitatBlatt(wurzel, [b], `${spielerNameVon(b.spielerId)} · ${datum(b.datum)}`, null) },
-      el('span', { class: 'phrasen-wort', text: `„${b.zitat}"` }),
-      el('span', { class: 'phrasen-quelle', text: `${spielerNameVon(b.spielerId)} · ${datum(b.datum)}` })
+    const tag = d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'long' });
+    sammlung.append(el('p', { class: 'phrasen-gruppe' },
+      el('span', { class: 'phrasen-tag', text: tag }),
+      g.kontext ? el('span', { class: 'phrasen-kontext', text: ` · ${g.kontext}` }) : null
     ));
+    for (const b of g.posten) {
+      sammlung.append(el('div', {
+        class: 'phrasenzeile',
+        onclick: () => zitatBlatt(wurzel, [b], `${spielerNameVon(b.spielerId)} · ${datum(b.datum)}`, null)
+      },
+        el('span', { class: 'phrasen-wort', text: `„${b.zitat}"` }),
+        el('span', { class: 'phrasen-quelle', text: spielerNameVon(b.spielerId) })
+      ));
+    }
   }
   anhaengen(wurzel, sammlung);
 }

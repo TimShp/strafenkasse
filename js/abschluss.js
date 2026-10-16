@@ -1,20 +1,37 @@
-// Monatsabschluss: ein Dokument mit Mannschaftsübersicht und Einzelauflistung
-// je Spieler. Ausgabe ueber den Druckdialog - auf dem iPhone fuehrt der zu
+// Abschluss: ein Dokument mit Mannschaftsübersicht und Einzelauflistung
+// je Spieler. Der Zeitraum ist waehlbar, nicht auf einen Monat festgelegt - die
+// erste Abrechnung einer Saison deckt sonst nur den letzten Monat einzeln ab und
+// wirft alles davor in eine einzige Zahl "Uebertrag". Ausgabe ueber den Druckdialog - auf dem iPhone fuehrt der zu
 // "Als PDF teilen" und damit direkt in die Mannschaftsgruppe.
 
 import { el, leeren, toast, fragen, anhaengen } from './ui.js';
 import { S, aktiveSpieler, buchungenVon, einstellung } from './store.js';
-import { eur, datum, monatName } from './format.js';
-import { abrechnung, monatsgrenzen, zitate, EINHEIT_KISTE } from './konto.js';
+import { eur, datum, monatName, monatOhneJahr } from './format.js';
+import { abrechnung, monatsgrenzen, zitatGruppen, EINHEIT_KISTE } from './konto.js';
 import { sicherungTeilen } from './sicherung.js';
 
 const jetzt = new Date();
-let jahr = jetzt.getFullYear();
-let monat = jetzt.getMonth() + 1;
+let vonJahr = jetzt.getFullYear();
+let vonMonat = jetzt.getMonth() + 1;
+let bisJahr = vonJahr;
+let bisMonat = vonMonat;
+
+const grenzen = () => ({
+  von: monatsgrenzen(vonJahr, vonMonat).von,
+  bis: monatsgrenzen(bisJahr, bisMonat).bis
+});
+
+const einMonat = () => vonJahr === bisJahr && vonMonat === bisMonat;
+
+const zeitraumText = () => {
+  if (einMonat()) return monatName(vonJahr, vonMonat);
+  const anfang = vonJahr === bisJahr ? monatOhneJahr(vonJahr, vonMonat) : monatName(vonJahr, vonMonat);
+  return `${anfang} bis ${monatName(bisJahr, bisMonat)}`;
+};
 
 export function zeichnen(wurzel) {
   leeren(wurzel);
-  const { von, bis } = monatsgrenzen(jahr, monat);
+  const { von, bis } = grenzen();
   const daten = aktiveSpieler().map(s => ({ spieler: s, a: abrechnung(buchungenVon(s.id), von, bis) }));
   const posten = daten.reduce((n, d) => n + d.a.posten.length, 0);
   const forderung = daten.reduce((n, d) => n + d.a.saldo, 0);
@@ -30,9 +47,9 @@ export function zeichnen(wurzel) {
         el('span', { class: 'kopf-kasse-label', text: 'Forderung danach' })
       )
     ),
-    monatswahl(wurzel),
+    zeitraumwahl(wurzel),
     el('section', { class: 'vorschau' },
-      el('h2', { class: 'abschnitt-titel', text: monatName(jahr, monat) }),
+      el('h2', { class: 'abschnitt-titel', text: zeitraumText() }),
       ...daten.map(d => el('div', { class: 'vorschau-zeile' },
         el('span', { text: d.spieler.name }),
         el('span', { class: 'vorschau-mitte', text: `${d.a.posten.length} Posten` }),
@@ -48,26 +65,46 @@ export function zeichnen(wurzel) {
   );
 }
 
-function monatswahl(wurzel) {
-  const schieben = richtung => {
-    const d = new Date(jahr, monat - 1 + richtung, 1);
-    jahr = d.getFullYear(); monat = d.getMonth() + 1;
+function zeitraumwahl(wurzel) {
+  // Von darf nie hinter Bis liegen; wer das eine schiebt, nimmt das andere mit.
+  const schieben = (welches, richtung) => {
+    if (welches === 'von') {
+      const d = new Date(vonJahr, vonMonat - 1 + richtung, 1);
+      vonJahr = d.getFullYear(); vonMonat = d.getMonth() + 1;
+      if (vonJahr * 12 + vonMonat > bisJahr * 12 + bisMonat) { bisJahr = vonJahr; bisMonat = vonMonat; }
+    } else {
+      const d = new Date(bisJahr, bisMonat - 1 + richtung, 1);
+      bisJahr = d.getFullYear(); bisMonat = d.getMonth() + 1;
+      if (bisJahr * 12 + bisMonat < vonJahr * 12 + vonMonat) { vonJahr = bisJahr; vonMonat = bisMonat; }
+    }
     zeichnen(wurzel);
   };
-  return el('div', { class: 'monatswahl' },
-    el('button', { class: 'knopf-still', type: 'button', 'aria-label': 'Vormonat', text: '‹', onclick: () => schieben(-1) }),
-    el('span', { class: 'monatswahl-text', text: monatName(jahr, monat) }),
-    el('button', { class: 'knopf-still', type: 'button', 'aria-label': 'Folgemonat', text: '›', onclick: () => schieben(1) })
+
+  const zeile = (etikett, welches, text) => el('div', { class: 'monatswahl' },
+    el('span', { class: 'monatswahl-etikett', text: etikett }),
+    el('button', { class: 'knopf-still', type: 'button', 'aria-label': `${etikett}: ein Monat zurück`, text: '‹', onclick: () => schieben(welches, -1) }),
+    el('span', { class: 'monatswahl-text', text }),
+    el('button', { class: 'knopf-still', type: 'button', 'aria-label': `${etikett}: ein Monat vor`, text: '›', onclick: () => schieben(welches, 1) })
+  );
+
+  const monate = (bisJahr * 12 + bisMonat) - (vonJahr * 12 + vonMonat) + 1;
+
+  return el('section', { class: 'zeitraum' },
+    zeile('Von', 'von', monatName(vonJahr, vonMonat)),
+    zeile('Bis', 'bis', monatName(bisJahr, bisMonat)),
+    monate > 1
+      ? el('p', { class: 'fussnote', text: `${monate} Monate in einer Abrechnung. Was davor liegt, steht als Übertrag in der Übersicht.` })
+      : null
   );
 }
 
 async function erstellen(daten, von, bis, posten) {
   if (posten === 0) {
-    toast('Im gewählten Monat gibt es keine Buchungen.', { ton: 'warn' });
+    toast('Im gewählten Zeitraum gibt es keine Buchungen.', { ton: 'warn' });
     return;
   }
   dokumentBauen(daten, von, bis);
-  await einstellung('letzterAbschluss', { jahr, monat, erstellt: new Date().toISOString() });
+  await einstellung('letzterAbschluss', { von, bis, erstellt: new Date().toISOString() });
   window.print();
   if (await fragen({
     titel: 'Sicherung teilen?',
@@ -82,7 +119,7 @@ function dokumentBauen(daten, von, bis) {
   const bisAnzeige = new Date(new Date(bis).getTime() - 86400000).toISOString();
 
   ziel.append(
-    el('h1', { class: 'd-titel', text: `Strafenabrechnung ${monatName(jahr, monat)}` }),
+    el('h1', { class: 'd-titel', text: `Strafenabrechnung ${zeitraumText()}` }),
     el('p', { class: 'd-unter', text: `${e.saison ? e.saison + ' · ' : ''}Zeitraum ${datum(von)} bis ${datum(bisAnzeige)} · erstellt am ${datum(new Date().toISOString())}` })
   );
 
@@ -136,20 +173,27 @@ function dokumentBauen(daten, von, bis) {
     );
   }
 
-  // Phrasen des Monats
-  const worte = zitate(S.buchungen, von, bis);
-  if (worte.length) {
+  // Phrasen, nach Tag und Kontext gebuendelt
+  const gruppen = zitatGruppen(S.buchungen, von, bis);
+  const anzahl = gruppen.reduce((n, g) => n + g.posten.length, 0);
+  if (anzahl) {
     const t = el('table', { class: 'd-tabelle d-tabelle--klein' });
     const tb = el('tbody');
-    for (const b of worte) {
-      tb.append(el('tr', {},
-        el('td', { class: 'd-datum', text: datum(b.datum) }),
-        el('td', { class: 'd-zitat', text: `„${b.zitat}"` }),
-        el('td', { class: 'r', text: S.spieler.find(s => s.id === b.spielerId)?.name ?? '' })
+    for (const g of gruppen) {
+      tb.append(el('tr', { class: 'd-gruppe' },
+        el('td', { class: 'd-datum', text: datum(g.datum) }),
+        el('td', { colspan: 2, text: g.kontext || '—' })
       ));
+      for (const b of g.posten) {
+        tb.append(el('tr', {},
+          el('td', {}),
+          el('td', { class: 'd-zitat', text: `„${b.zitat}"` }),
+          el('td', { class: 'r', text: S.spieler.find(s => s.id === b.spielerId)?.name ?? '' })
+        ));
+      }
     }
     t.append(tb);
-    ziel.append(el('h2', { class: 'd-h2', text: `Phrasen des Monats (${worte.length})` }), t);
+    ziel.append(el('h2', { class: 'd-h2', text: `Phrasen (${anzahl})` }), t);
   }
 
   // Einzelauflistung

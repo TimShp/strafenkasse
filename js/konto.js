@@ -82,6 +82,35 @@ export function zitate(buchungen, von = null, bis = null) {
     .sort((a, b) => b.datum.localeCompare(a.datum));
 }
 
+/**
+ * Zitate zu Gespraechen buendeln: gleicher Tag und gleicher Kontext gehoeren
+ * zusammen. Mehr Verknuepfung gibt es nicht - kein Thread, keine Antwortbezuege.
+ * Der Kontext ist freier Text, verglichen wird ohne Gross- und Kleinschreibung.
+ * Gruppen stehen neueste zuerst, innerhalb einer Gruppe chronologisch, damit
+ * sich eine Wortfolge liest wie sie gefallen ist.
+ */
+export function zitatGruppen(buchungen, von = null, bis = null) {
+  const tagSchluessel = iso => {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  };
+  const gruppen = [];
+  const index = new Map();
+  for (const b of zitate(buchungen, von, bis)) {
+    const kontext = (b.kontext ?? '').trim();
+    const schluessel = `${tagSchluessel(b.datum)}|${kontext.toLowerCase()}`;
+    let g = index.get(schluessel);
+    if (!g) {
+      g = { tag: tagSchluessel(b.datum), datum: b.datum, kontext, posten: [] };
+      index.set(schluessel, g);
+      gruppen.push(g);
+    }
+    g.posten.push(b);
+  }
+  for (const g of gruppen) g.posten.sort((a, b) => a.datum.localeCompare(b.datum));
+  return gruppen;
+}
+
 /** Nach Spieler gruppieren, damit die Oberflaeche nicht n-mal filtern muss. */
 export function nachSpieler(buchungen) {
   const map = new Map();
